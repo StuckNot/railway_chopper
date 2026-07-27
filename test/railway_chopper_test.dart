@@ -1,4 +1,4 @@
-import 'package:railway/railway.dart';
+import 'package:railway_chopper/railway_chopper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-name: railway
+name: railway_chopper
 description: "A chopper client factory and a Response -> Either<NetworkFailure, T> mapper for railway-oriented error handling in Flutter/Dart."
 version: 0.1.0
 homepage:

@@ -1,4 +1,4 @@
-# railway
+# railway_chopper
 
 Shared network infrastructure for Atomise Flutter apps: a `chopper` client
 factory, and a `Response -> Either<NetworkFailure, T>` mapper.
@@ -54,9 +54,9 @@ Consumed via pinned git tags, not a moving branch:
 
 ```yaml
 dependencies:
-  railway:
+  railway_chopper:
     git:
-      url: <railway-repo-url>
+      url: <railway_chopper-repo-url>
       ref: v0.1.0
 ```
 
