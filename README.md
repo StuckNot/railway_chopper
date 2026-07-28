@@ -64,10 +64,10 @@ Follows semver: PATCH for fixes, MINOR for additive changes, MAJOR for breaking 
 ## Development
 
 ```bash
-flutter pub get
+dart pub get
 dart run build_runner build --delete-conflicting-outputs   # regen freezed code
-flutter analyze
-flutter test
+dart analyze
+dart test
 ```
 
 Generated code (`*.freezed.dart`) is committed — consumers don't need to run codegen themselves.

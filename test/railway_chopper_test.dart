@@ -1,5 +1,5 @@
 import 'package:railway_chopper/railway_chopper.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('NetworkFailure variants are value-equal', () {
