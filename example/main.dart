@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:railway_chopper/railway_chopper.dart';
 
 Future<void> main() async {
@@ -14,8 +15,8 @@ Future<void> main() async {
   );
 
   result.match(
-    (failure) => print('Request failed: $failure'),
-    (todo) => print('Todo #${todo['id']}: ${todo['title']}'),
+    (failure) => debugPrint('Request failed: $failure'),
+    (todo) => debugPrint('Todo #${todo['id']}: ${todo['title']}'),
   );
 
   client.dispose();
