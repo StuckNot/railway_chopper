@@ -3,6 +3,7 @@
 [![pub package](https://img.shields.io/pub/v/railway_chopper.svg)](https://pub.dev/packages/railway_chopper)
 [![pub points](https://img.shields.io/pub/points/railway_chopper)](https://pub.dev/packages/railway_chopper/score)
 [![CI](https://github.com/StuckNot/railway_chopper/actions/workflows/ci.yml/badge.svg)](https://github.com/StuckNot/railway_chopper/actions/workflows/ci.yml)
+[![style: lints](https://img.shields.io/badge/style-lints-4BC0F5.svg)](https://pub.dev/packages/lints)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A `chopper` client factory and a `Response -> Either<NetworkFailure, T>` mapper for railway-oriented error handling in Flutter/Dart.
@@ -15,13 +16,57 @@ In Dart, `Either<L, R>` (from `fpdart`) is the type that represents this: `Left`
 
 This package owns **no business logic and no DTOs**. It's feature-agnostic, so any number of features in an app can depend on it without depending on each other through it.
 
+## Why railway_chopper over plain chopper?
+
+Without it, every call site ends up hand-rolling its own error handling, and the classification logic drifts slightly differently each time it's copy-pasted:
+
+```dart
+try {
+  final response = await myApi.getSomething();
+  if (response.isSuccessful) {
+    return response.body!;
+  }
+  if (response.statusCode == 401) {
+    // handle unauthorized
+  } else if (response.statusCode >= 500) {
+    // handle server error
+  }
+  // ...repeated, slightly differently, at every call site
+} on TimeoutException {
+  // handle timeout
+} on ClientException {
+  // handle network failure
+}
+```
+
+`toEither` centralizes that branching once, so every call site gets the same, consistent `NetworkFailure` classification for free, and the failure-handling logic lives in exactly one place instead of N slightly-different copies:
+
+```dart
+final result = await myApi.getSomething().toEither();
+result.match(
+  (failure) => /* one exhaustive switch, not copy-pasted per call site */,
+  (data) => /* use data */,
+);
+```
+
 ## What's in here
 
 | Export | Purpose |
 | --- | --- |
 | `buildChopperClient` | Builds a configured `ChopperClient` (base url, JSON conversion, interceptors). Attach your generated `@ChopperApi` services to it. |
-| `NetworkFailure` | Sealed, freezed union of transport-level failures: `network`, `timeout`, `server`, `clientError`, `unauthorized`, `unknown`. |
-| `mapResponse` | Wraps a chopper request, returning `Either<NetworkFailure, T>`. |
+| `NetworkFailure` | Sealed, freezed union of transport-level failures — see below. |
+| `toEither` | Extension on `Future<Response<T>>` — converts a chopper request into `Either<NetworkFailure, T>`. |
+
+### `NetworkFailure` variants
+
+| Variant | When |
+| --- | --- |
+| `NetworkFailure.network()` | The request never reached the server — DNS failure, connection refused, offline device. |
+| `NetworkFailure.timeout()` | The request exceeded its configured timeout. |
+| `NetworkFailure.unauthorized()` | Response status was `401`. |
+| `NetworkFailure.clientError({statusCode, message})` | Response status was `4xx` (excluding `401`). |
+| `NetworkFailure.server({statusCode})` | Response status was `5xx`. |
+| `NetworkFailure.unknown({error})` | An unrecognized status code, or any other unexpected exception. |
 
 ## What's NOT in here
 
@@ -41,7 +86,7 @@ final client = buildChopperClient(
 );
 
 // Attach a generated chopper API service to `client`, then in a repository:
-final result = await mapResponse(() => myApi.getSomething());
+final result = await myApi.getSomething().toEither();
 result.match(
   (failure) => /* handle NetworkFailure */,
   (data) => /* use data */,
@@ -54,7 +99,7 @@ A full runnable version (hitting a real public API, no codegen required) is in [
 
 ```yaml
 dependencies:
-  railway_chopper: ^0.1.0
+  railway_chopper: ^0.2.0
 ```
 
 ## Versioning
