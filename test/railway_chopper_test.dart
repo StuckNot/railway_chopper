@@ -13,3 +13,6 @@ void main() {
     );
   });
 }
+
+//1. Test if correct mapping is happening for all exceptions
+//2. failures are immutable, value equals, toString works
