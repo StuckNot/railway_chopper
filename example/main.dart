@@ -7,11 +7,9 @@ Future<void> main() async {
     baseUrl: 'https://jsonplaceholder.typicode.com',
   );
 
-  final result = await mapResponse(
-    () => client.get<Map<String, dynamic>, Map<String, dynamic>>(
-      Uri.parse('/todos/1'),
-    ),
-  );
+  final result = await client
+      .get<Map<String, dynamic>, Map<String, dynamic>>(Uri.parse('/todos/1'))
+      .toEither();
 
   result.match(
     (failure) => print('Request failed: $failure'),
