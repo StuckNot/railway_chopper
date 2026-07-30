@@ -1,26 +1,26 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:chopper/chopper.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:http/http.dart' show ClientException;
 import '../failures/network_failure.dart';
 
-/// Maps a chopper [Response] to `Either<NetworkFailure, T>`, the boundary
-/// every repository in every feature package returns across.
-Future<Either<NetworkFailure, T>> mapResponse<T>(
-  Future<Response<T>> Function() request,
-) async {
-  try {
-    final response = await request();
-    if (response.isSuccessful) {
-      return right(response.body as T);
+/// Converts a chopper [Response] into `Either<NetworkFailure, T>`, the
+/// boundary every repository in every feature package returns across.
+extension ResponseToEither<T> on Future<Response<T>> {
+  Future<Either<NetworkFailure, T>> toEither() async {
+    try {
+      final response = await this;
+      if (response.isSuccessful) {
+        return right(response.body as T);
+      }
+      return left(_failureForStatusCode(response.statusCode));
+    } on TimeoutException catch (_) {
+      return left(const NetworkFailure.timeout());
+    } on ClientException catch (_) {
+      return left(const NetworkFailure.network());
+    } on Exception catch (e) {
+      return left(NetworkFailure.unknown(error: e));
     }
-    return left(_failureForStatusCode(response.statusCode));
-  } on TimeoutException catch (_) {
-    return left(const NetworkFailure.timeout());
-  } on SocketException catch (_) {
-    return left(const NetworkFailure.network());
-  } on Exception catch (e) {
-    return left(NetworkFailure.unknown(error: e));
   }
 }
 
