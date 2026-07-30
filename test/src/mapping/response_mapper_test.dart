@@ -61,9 +61,7 @@ void main() {
 
     test('on Exception', () async {
       final exception = Exception('boom');
-      final result = await Future<Response<String>>.error(
-        exception,
-      ).toEither();
+      final result = await Future<Response<String>>.error(exception).toEither();
       expect(result, Either.left(NetworkFailure.unknown(error: exception)));
     });
   });

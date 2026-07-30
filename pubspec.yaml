@@ -3,6 +3,12 @@ description: "A chopper client factory and a Response -> Either<NetworkFailure, 
 version: 0.2.0
 homepage: https://github.com/StuckNot/railway_chopper
 repository: https://github.com/StuckNot/railway_chopper
+topics:
+  - network
+  - http
+  - chopper
+  - either
+  - error-handling
 
 environment:
   sdk: ^3.11.5
