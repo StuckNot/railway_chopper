@@ -1,0 +1,48 @@
+name: Publish to Pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # Required for pub.dev OIDC automated publishing
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Verify Tag Matches Pubspec Version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          if [ "$TAG_VERSION" != "$PUBSPEC_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match pubspec.yaml version ($PUBSPEC_VERSION)"
+            exit 1
+          fi
+
+      - name: Check if Version is Already Published on Pub.dev
+        run: |
+          PACKAGE_NAME=$(grep '^name:' pubspec.yaml | awk '{print $2}')
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          
+          HTTP_STATUS=$(curl -s -o pub_info.json -w "%{http_code}" "https://pub.dev/api/packages/${PACKAGE_NAME}")
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            if grep -q "\"version\":\"${PUBSPEC_VERSION}\"" pub_info.json; then
+              echo "::warning::Version ${PUBSPEC_VERSION} is already published on pub.dev! Skipping publish step."
+              exit 0
+            fi
+          fi
+          echo "Version ${PUBSPEC_VERSION} is new. Proceeding with release..."
+
+      - name: Run Dry Run
+        run: dart pub publish --dry-run
+
+      - name: Publish to Pub.dev
+        run: dart pub publish --force
