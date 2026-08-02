@@ -87,7 +87,7 @@ A full runnable version (hitting a real public API, no codegen required) is in [
 
 | Export | Purpose |
 | --- | --- |
-| `buildChopperClient` | Builds a configured `ChopperClient` (base url, JSON conversion, interceptors). Attach your generated `@ChopperApi` services to it. |
+| `buildChopperClient` | Builds a configured `ChopperClient` (base URL, default headers, interceptors, custom `httpClient`, `converter`, `errorConverter`). Attach your generated `@ChopperApi` services to it. |
 | `NetworkFailure` | Sealed, freezed union of transport-level failures — see below. |
 | `toEither` | Extension on `Future<Response<T>>` — converts a chopper request into `Either<NetworkFailure, T>`. |
 
@@ -99,7 +99,7 @@ A full runnable version (hitting a real public API, no codegen required) is in [
 | `NetworkFailure.timeout()` | The request exceeded its configured timeout. |
 | `NetworkFailure.unauthorized()` | Response status was `401`. |
 | `NetworkFailure.clientError({statusCode, message})` | Response status was `4xx` (excluding `401`). |
-| `NetworkFailure.server({statusCode})` | Response status was `5xx`. |
+| `NetworkFailure.server({statusCode, message})` | Response status was `5xx`. |
 | `NetworkFailure.unknown({error})` | An unrecognized status code, or any other unexpected exception. |
 
 ## What's NOT in here
@@ -108,6 +108,12 @@ A full runnable version (hitting a real public API, no codegen required) is in [
 - **DTOs / swagger-generated models** — these belong in each feature's own data layer, generated against that feature's API spec.
 - **Domain failures** — `NetworkFailure` is an infra-layer type. Map it into your own domain failure type (e.g. `AuthFailure`) before it reaches your domain/presentation layers.
 - Anything specific to a single feature or client. If a feature needs different behavior, it implements an interface or injects a callback — it never forks this package.
+
+## Related Packages
+
+Part of the **Railway Suite** for functional error handling in Dart & Flutter:
+
+- [`railway_dio`](https://pub.dev/packages/railway_dio) — Railway-oriented error handling for `package:dio`.
 
 ## Versioning
 

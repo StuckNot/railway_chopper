@@ -19,8 +19,32 @@ extension ResponseToEither<T> on Future<Response<T>> {
     } on ClientException catch (_) {
       return left(const NetworkFailure.network());
     } on Exception catch (e) {
+      if (e.toString().contains('SocketException') ||
+          e.runtimeType.toString().contains('SocketException')) {
+        return left(const NetworkFailure.network());
+      }
       return left(NetworkFailure.unknown(error: e));
     }
+  }
+}
+
+/// Maps a chopper [Response] to `Either<NetworkFailure, T>`.
+///
+/// Deprecated in favor of [ResponseToEither.toEither] extension method.
+/// Will be removed in version 0.3.0.
+@Deprecated(
+  'Use .toEither() extension on Future<Response<T>> instead. Will be removed in 0.3.0.',
+)
+Future<Either<NetworkFailure, T>> mapResponse<T>(
+  Future<Response<T>> Function() request,
+) async {
+  try {
+    return await request().toEither();
+  } catch (e) {
+    if (e is Exception) {
+      return left(NetworkFailure.unknown(error: e));
+    }
+    rethrow;
   }
 }
 

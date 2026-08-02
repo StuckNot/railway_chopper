@@ -64,5 +64,31 @@ void main() {
       final result = await Future<Response<String>>.error(exception).toEither();
       expect(result, Either.left(NetworkFailure.unknown(error: exception)));
     });
+
+    test('on SocketException', () async {
+      final result = await Future<Response<String>>.error(
+        // ignore: avoid_dynamic_calls
+        Exception('SocketException: Connection refused'),
+      ).toEither();
+      expect(result, Either.left(NetworkFailure.network()));
+    });
+  });
+
+  group('deprecated mapResponse backward compatibility test', () {
+    test('mapResponse delegates to toEither on success', () async {
+      // ignore: deprecated_member_use_from_same_package
+      final result = await mapResponse(
+        () async => Response<String>(http.Response('', 200), 'world'),
+      );
+      expect(result, Either.right('world'));
+    });
+
+    test('mapResponse delegates to toEither on failure', () async {
+      // ignore: deprecated_member_use_from_same_package
+      final result = await mapResponse(
+        () async => Response<String>(http.Response('', 401), null),
+      );
+      expect(result, Either.left(const NetworkFailure.unauthorized()));
+    });
   });
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.1
+
+### Fixed / Compatibility
+- Restored `mapResponse` as a deprecated function to provide backward compatibility for `v0.1.0` consumers. It will be removed in `v0.3.0`.
+
 ## v0.2.0
 
 ### Breaking
